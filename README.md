@@ -23,7 +23,7 @@ The general workflow for how this works is as follows.
   
 Here is a description of the different files used.
 
-  nJetsVars.list
+nJetsVars.list
   - This is the main set up file consisting of many parts that are used across the different pieces of code
     If you comment out a line (i.e. put a '#' mark at the start of the line), it won't be read. Here are the components
     
@@ -51,7 +51,7 @@ Here is a description of the different files used.
     - DENOM_PRODUCT
       The product that is used as the untagged product
 
-  nJetsEstimate_LPC.py
+nJetsEstimate_LPC.py
   - The main piece of code for the project. The code to print the pdfs and run the actual estimation part.
   - Listed below are options that you can toggle to change the functionality
     - deltaRmode 
@@ -62,7 +62,7 @@ Here is a description of the different files used.
       If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
       if deltaRmode == True && singleEffMode == true then we get the efficiency as a function of only deltaR instead of a 2D parameterization with the first variable
       
-  bash createNJets.sh
+bash createNJets.sh
   - This creates the set up to run the code contained in nJetsEstimate_LPC.py. This includes
     - creating the condor run-script runNJets.sh
     - setting up directories in eos to store all of the nJets information based on nJetsVars.list
@@ -71,15 +71,15 @@ Here is a description of the different files used.
     - creating a condor file submitNJets.condor
     - printing a pdf of the efficiencies
 
-  condor_submit submitNJets.condor
+condor_submit submitNJets.condor
   - submits job onto condor
 
-  bash runNJets.sh
+bash runNJets.sh
   - running the nJeta jobs. This is done on condor.
 
-  bash scanNJets.sh
+bash scanNJets.sh
   - scans the condor queue every 10 minutes to check if nJets jobs are done. if they are, then go to prepareNJets.sh
 
-  bash prepareNJets.sh
+bash prepareNJets.sh
   - add the output files
   - print pdf of the estimates
