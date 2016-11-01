@@ -44,8 +44,8 @@ Here is a description of the different files used.
       - The different background processes that are used to create the background histogram. Also define cross sections here. There is are directories of analysis trees on eos (defined in nJetsEstimate_LPC.py) that contains information on where the files are.
       - The format for a line is:
         - Process xsection
-      - So, the following line adds the WH_HToBB background at a cross-section of 1.369*0.577*0.324
-        - WH_HToBB_WToLNu_M125_13TeV_amcatnloFXFX_madspin_pythia8 1.369*0.577*0.324
+      - So, the following line adds the WH_HToBB background at a cross-section of 1.369\*0.577\*0.324
+        - WH_HToBB_WToLNu_M125_13TeV_amcatnloFXFX_madspin_pythia8 1.369\*0.577\*0.324
       - NOTE: the only algebraic operation supported for the cross section is multplication. So, 6.0 and 2.0*3.0 will both give cross sections of 6, but 3.0+3.0 will give undefined behavior or a crash.
 
     - DENOM_PRODUCT
