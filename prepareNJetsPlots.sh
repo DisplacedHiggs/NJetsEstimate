@@ -60,7 +60,9 @@ done < $varFile
 
 rm -rf yNJets
 mkdir yNJets
-xrdcp -r root://cmseos.fnal.gov//store/user/stata/nJets/ ./yNJets
+#xrdcp -r root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/ ./yNJets #ben: i don't think this works
+python movefiles.py T3_US_FNAL displaced_bkg_pt-dr/nJets/ local $PWD/yNJets -r -p xrootd
+
 
 for i in "${!VarList[@]}"
 #for i in 0
@@ -74,14 +76,14 @@ do
       for l in "${!BkgFileList[@]}"
       do
         haddR -f yNJets/${var}_${prod}_${k}/testDistr${l}.root yNJets/${var}_${prod}_${k}/bkg${l}/*.root
-	#haddR -f -c ${var}_${prod}_${k}testDistr${l}.root `xrdfs root://cmseos.fnal.gov ls /store/user/stata/nJets/${var}_${prod}_${k}/bkg${l}/ | grep "\.root"`
-	#xrdcp ${var}_${prod}_${k}testDistr${l}.root root://cmseos.fnal.gov//store/user/stata/nJets/${var}_${prod}_${k}/testDistr${l}.root
+	#haddR -f -c ${var}_${prod}_${k}testDistr${l}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/bkg${l}/ | grep "\.root"`
+	#xrdcp ${var}_${prod}_${k}testDistr${l}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/testDistr${l}.root
 	#rm ${var}_${prod}_${k}testDistr${l}.root
 	:
       done
       haddR -f yNJets/testDistr_${var}_${prod}_${k}.root yNJets/${var}_${prod}_${k}/testDistr*
-      #haddR -f -c testDistr_${var}_${prod}_${k}.root `xrdfs root://cmseos.fnal.gov ls /store/user/stata/nJets/${var}_${prod}_${k}/ | grep "testDistr"`
-      #xrdcp testDistr_${var}_${prod}_${k}.root root://cmseos.fnal.gov//store/user/stata/nJets/testDistr_${var}_${prod}_${k}.root
+      #haddR -f -c testDistr_${var}_${prod}_${k}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/ | grep "testDistr"`
+      #xrdcp testDistr_${var}_${prod}_${k}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/testDistr_${var}_${prod}_${k}.root
       #rm testDistr_${var}_${prod}_${k}.root
       :
     done

@@ -5,8 +5,8 @@ export COIN_FULL_INDIRECT_RENDERING=1
 echo $VO_CMS_SW_DIR
 source $VO_CMS_SW_DIR/cmsset_default.sh
 export SCRAM_ARCH=slc6_amd64_gcc493
-tar xzf CMSSW_7_6_3_patch2.tar.gz
-cd CMSSW_7_6_3_patch2/src
+tar xzf CMSSW_8_0_18_patch1.tar.gz
+cd CMSSW_8_0_18_patch1/src
 scram b ProjectRename
 eval `scramv1 runtime -sh`
 cd -

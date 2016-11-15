@@ -82,8 +82,8 @@ for line in varFile.readlines():
     fileDir = line
 
 #Set deltaRmode to true if we want to parameterize 2D efficiencies in terms of deltaR
-#NOTE: currently the code is modified to parameterize with nGoodVertices instead
-deltaRmode = False
+#NOTE: the code is sometimes  modified to parameterize with nGoodVertices instead
+deltaRmode = True
 
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
@@ -109,8 +109,8 @@ def makeEffiPlot(i,n,r):
     numDistrTotal = TH1F("num_%s_%s_%i"%(var,numProduct,r),"num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i])
     denomDistrTotal = TH1F("denom_%s_%s_%i"%(var,numProduct,r),"denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i])
   else:
-    numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40)
-    denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40)
+    numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
+    denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
 
   processes = []
   queues = []
@@ -194,7 +194,7 @@ def makeEffiPlot(i,n,r):
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/stata/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
@@ -238,10 +238,10 @@ def makeNumDenom(i,j,region,numProduct,queue):
         denomDistr.Add(hDen)
         
     else:
-      # treeR.Draw("BASICCALOJETS1DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
-      # treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
-      treeR.Draw("NGOODVERTICES:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
-      treeR.Draw("NGOODVERTICES:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
+      treeR.Draw("BASICCALOJETS1DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      #treeR.Draw("NGOODVERTICES:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
+      #treeR.Draw("NGOODVERTICES:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       hNum = TH2F(gDirectory.Get("num%i"%(j)))
       hDen = TH2F(gDirectory.Get("den%i"%(j)))
       hNum.SetDirectory(0)
@@ -284,7 +284,7 @@ def effiWriteToPDF():
         numProduct = numProductList[n]
         region = regionList[r]
 
-        ff = TFile.Open("root://cmseos.fnal.gov//store/user/stata/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
+        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
 
         if not deltaRmode:
           effiPlot = TH1F(ff.Get("effi_%s_%s_%i"%(var,numProduct,r)))
@@ -347,15 +347,15 @@ def effiWriteToPDF():
         else:
           for h in [effiPlot,numPlot,denomPlot]:
             h.GetXaxis().SetTitle(var)
-            # h.GetYaxis().SetTitle("DELTAR_BASICCALOJETS1")
-            h.GetYaxis().SetTitle("NGOODVERTICES")
+            h.GetYaxis().SetTitle("DELTAR_BASICCALOJETS1")
+            #h.GetYaxis().SetTitle("NGOODVERTICES")
             
           pad = canvas.cd(1)
           pad.SetRightMargin(0.15)
           if singleEffMode and i == 0:
-            # pad.SetLogy()
-            # effiPlot.SetTitle("Eff wrt DR nearest")
-            effiPlot.SetTitle("Eff wrt NGOODVERTICES")
+            #pad.SetLogy()
+            effiPlot.SetTitle("Eff wrt DR nearest")
+            #effiPlot.SetTitle("Eff wrt NGOODVERTICES")
             effiPlot.ProjectionY().Draw("e1")
           else:
             # pad.SetLogz()
@@ -550,8 +550,8 @@ def makeEstimateHistos():
         for h in estimateDists:
           hEstN.Add(h)
           
-        if nJetsDistr.Integral() > 0: nJetsDistr.Scale(1./nJetsDistr.Integral())
-        if hEstN.Integral() > 0: hEstN.Scale(1./hEstN.Integral())
+        #if nJetsDistr.Integral() > 0: nJetsDistr.Scale(1./nJetsDistr.Integral())#ben: removed
+        #if hEstN.Integral() > 0: hEstN.Scale(1./hEstN.Integral())#ben: removed
 
         pad = canvas.cd(1)
         pad.SetLogy()
@@ -566,7 +566,7 @@ def makeEstimateHistos():
         # legend.Draw()
 
         if singleEffMode and i == 0:
-          title = "Background Esimate using Total Ratio" if not deltaRmode else "Background estimate using NGOODVERTICES"
+          title = "Background Esimate using Total Ratio" if not deltaRmode else "Background estimate using deltaR"
         else:
           title = "Background Esimate using %s"%(var)
           
@@ -591,7 +591,9 @@ def makeEstimateHistos():
         ratioPlot.SetLineColor(kGreen)
         ratioPlot.SetLineWidth(1)
         ratioPlot.SetMarkerStyle(25)
-        
+        ratioPlot.SetMinimum(0);
+        ratioPlot.SetMaximum(3);
+
         legend = TLegend(0.80,0.75,0.98,0.98)
         legend.AddEntry(nJetsDistr,"actual distr.")
         legend.AddEntry(hEstN,"estimated")
@@ -602,7 +604,7 @@ def makeEstimateHistos():
         legend.Draw()
         
         pad = canvas.cd(2)
-        ratioPlot.Draw("e1")
+        ratioPlot.Draw("e0")
         
         canvas.cd()
         
@@ -750,7 +752,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   upBoundEff = UpBoundList[i]
   inFile = allTreesDir + sample + "/" + file
   
-  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/stata/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
+  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
   if not deltaRmode:
     hEffi = fEffi.Get("effi_%s_%s_%i"%(var,numProduct,regionIndex))
   else:
@@ -775,8 +777,8 @@ def parseTree(numProduct,regionIndex,i,j,file):
     numDistr = TH1F("%s %s_%s"%(sample,var,numProduct),"%s %s_%s"%(sample,var,numProduct),nBinsEff,lowBoundEff,upBoundEff)
     denomDistr = TH1F("%s %s_%s"%(sample,var,denomProduct),"%s %s_%s"%(sample,var,denomProduct),nBinsEff,lowBoundEff,upBoundEff)
   else:
-    numDistr = TH2F("%s %s_%s"%(sample,var,numProduct),"%s %s_%s"%(sample,var,numProduct),nBinsEff,lowBoundEff,upBoundEff,20,0,40)
-    denomDistr = TH2F("%s %s_%s"%(sample,var,denomProduct),"%s %s_%s"%(sample,var,denomProduct),nBinsEff,lowBoundEff,upBoundEff,20,0,40)
+    numDistr = TH2F("%s %s_%s"%(sample,var,numProduct),"%s %s_%s"%(sample,var,numProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
+    denomDistr = TH2F("%s %s_%s"%(sample,var,denomProduct),"%s %s_%s"%(sample,var,denomProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
 
   # hEffi = numDistr.Clone()
   # hEffi.Divide(denomDistr)
@@ -805,10 +807,10 @@ def parseTree(numProduct,regionIndex,i,j,file):
       for x in vectVals: denomDistr.Fill(x)
       for x in taggedVals: numDistr.Fill(x)
     else:
-      # vectValsDeltaR = getattr(treeR,"SELFDELTAR_%s"%(denomProduct))
-      # taggedValsDeltaR = getattr(treeR,"BASICCALOJETS1DELTAR_%s"%(numProduct))
-      vectValsDeltaR = list(treeR.NGOODVERTICES)
-      taggedValsDeltaR = list(treeR.NGOODVERTICES)
+      vectValsDeltaR   = getattr(treeR,"SELFDELTAR_%s"%(denomProduct))
+      taggedValsDeltaR = getattr(treeR,"BASICCALOJETS1DELTAR_%s"%(numProduct))
+      #vectValsDeltaR = list(treeR.NGOODVERTICES)
+      #taggedValsDeltaR = list(treeR.NGOODVERTICES)
       
       #print statements for debugging
       #print "//////////////////////////////"
@@ -858,8 +860,8 @@ def parseTree(numProduct,regionIndex,i,j,file):
         vectProb.append(hEffi.GetBinContent(hEffi.FindBin(x)))
     else:
       for itr in range(0,len(vectVals)):
-        #vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
-        vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
+        vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
+        #vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
        
     vectError = []
     if not deltaRmode:
@@ -867,8 +869,8 @@ def parseTree(numProduct,regionIndex,i,j,file):
         vectError.append(hEffi.GetBinError(hEffi.FindBin(x)))
     else:
       for itr in range(0,len(vectVals)):
-        #vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
-        vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
+        vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
+        #vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
 
     for k in range(0,10):
       hEstBkg.Fill(k,binomialTerm(vectProb,k))
@@ -965,7 +967,7 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/stata/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
 
 if __name__ == '__main__': main()

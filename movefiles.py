@@ -2,6 +2,8 @@
 import os, sys, getopt, argparse, fnmatch, errno, subprocess, tempfile
 from subprocess import call
 
+#Courtesy of Alexx Perloff
+
 class Error(EnvironmentError):
     pass
 
