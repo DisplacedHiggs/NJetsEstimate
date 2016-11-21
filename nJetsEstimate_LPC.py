@@ -26,9 +26,9 @@ regionList = []
 
 numProductList = []
 
-denomProduct = "BASICCALOJETS1"
-fileDir = "root://cmseos.fnal.gov//store/user/stata/AnalysisTrees/addedHistos/"
-allTreesDir = "root://cmseos.fnal.gov//store/user/stata/AnalysisTrees/"
+denomProduct = "BASICCALOJETS1PT20"
+fileDir = "root://cmseos.fnal.gov//store/user/lpchbb/mwalker/AnalysisTrees/"
+allTreesDir = "root://cmseos.fnal.gov//store/user/lpchbb/kreis/AnalysisTrees/"
 
 sampleList = []
 filesBkg = []
@@ -69,7 +69,8 @@ for line in varFile.readlines():
     splitLine = line.split(" ")
     sample = str(splitLine[0])
     if "root://cmseos.fnal.gov" in fileDir:
-      fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample)).read().split("\n")[:-1]
+      #fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample)).read().split("\n")[:-1]
+      fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s%s%s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample,"/addedHistos/",sample)).read().split("\n")[:-1]
     else:
       fileList = os.popen("ls %s | grep %s"%(fileDir,sample)).read().split("\n")[:-1]
     
@@ -83,7 +84,7 @@ for line in varFile.readlines():
 
 #Set deltaRmode to true if we want to parameterize 2D efficiencies in terms of deltaR
 #NOTE: the code is sometimes  modified to parameterize with nGoodVertices instead
-deltaRmode = True
+deltaRmode = False
 
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
@@ -194,7 +195,7 @@ def makeEffiPlot(i,n,r):
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
@@ -205,8 +206,9 @@ def makeNumDenom(i,j,region,numProduct,queue):
   var = VarList[i]
   
   for f in range(0,len(filesBkg[j])):
-    inFile = fileDir + filesBkg[j][f].split('/')[-1]
-    #print inFile
+    #inFile = fileDir + filesBkg[j][f].split('/')[-1]
+    inFile = "root://cmseos.fnal.gov/" + filesBkg[j][f]
+    print inFile
     ff = TFile.Open(inFile)
     treeR = ff.Get("treeR")
     treeR.SetWeight(1.0)
@@ -238,7 +240,7 @@ def makeNumDenom(i,j,region,numProduct,queue):
         denomDistr.Add(hDen)
         
     else:
-      treeR.Draw("BASICCALOJETS1DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      treeR.Draw("BASICCALOJETS1PT20DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
       treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
@@ -284,7 +286,7 @@ def effiWriteToPDF():
         numProduct = numProductList[n]
         region = regionList[r]
 
-        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
+        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
 
         if not deltaRmode:
           effiPlot = TH1F(ff.Get("effi_%s_%s_%i"%(var,numProduct,r)))
@@ -347,7 +349,7 @@ def effiWriteToPDF():
         else:
           for h in [effiPlot,numPlot,denomPlot]:
             h.GetXaxis().SetTitle(var)
-            h.GetYaxis().SetTitle("DELTAR_BASICCALOJETS1")
+            h.GetYaxis().SetTitle("DELTAR_BASICCALOJETS1PT20")
             #h.GetYaxis().SetTitle("NGOODVERTICES")
             
           pad = canvas.cd(1)
@@ -752,7 +754,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   upBoundEff = UpBoundList[i]
   inFile = allTreesDir + sample + "/" + file
   
-  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
+  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
   if not deltaRmode:
     hEffi = fEffi.Get("effi_%s_%s_%i"%(var,numProduct,regionIndex))
   else:
@@ -792,7 +794,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   print "drew distributions"
   
   treeR.SetBranchStatus("*",0)
-  for b in ["SELFDELTAR_%s"%(denomProduct),"BASICCALOJETS1DELTAR_%s"%(numProduct),"%s_%s"%(var,denomProduct),"%s_%s"%(var,numProduct),"NGOODVERTICES"]:
+  for b in ["SELFDELTAR_%s"%(denomProduct),"BASICCALOJETS1PT20DELTAR_%s"%(numProduct),"%s_%s"%(var,denomProduct),"%s_%s"%(var,numProduct),"NGOODVERTICES"]:
     treeR.SetBranchStatus(b,1)
   
 
@@ -808,7 +810,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
       for x in taggedVals: numDistr.Fill(x)
     else:
       vectValsDeltaR   = getattr(treeR,"SELFDELTAR_%s"%(denomProduct))
-      taggedValsDeltaR = getattr(treeR,"BASICCALOJETS1DELTAR_%s"%(numProduct))
+      taggedValsDeltaR = getattr(treeR,"BASICCALOJETS1PT20DELTAR_%s"%(numProduct))
       #vectValsDeltaR = list(treeR.NGOODVERTICES)
       #taggedValsDeltaR = list(treeR.NGOODVERTICES)
       
@@ -887,7 +889,8 @@ def parseTree(numProduct,regionIndex,i,j,file):
   
   # scale by number of total events in hadded files
   for f in range(0,len(filesBkg[j])):
-    fTotal = TFile.Open(fileDir + filesBkg[j][f].split('/')[-1])
+    #fTotal = TFile.Open(fileDir + filesBkg[j][f].split('/')[-1])
+    fTotal = TFile.Open("root://cmseos.fnal.gov/" + filesBkg[j][f])
     treeRtotal = fTotal.Get("treeR")
     if f == 0:
       nEventsTotal = treeRtotal.GetEntries()
@@ -967,7 +970,7 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
 
 if __name__ == '__main__': main()
