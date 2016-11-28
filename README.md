@@ -5,10 +5,11 @@ NOTE: The code for the N Jets Estimation is designed to run on the LPC servers.
 
 
 # Running Instructions:
+```
 bash createNJets.sh
 condor_submit submitNJets.condor
 bash prepareNJetsPlots.sh
-
+'''
 
 # More Details
 The general workflow for how this works is as follows.
