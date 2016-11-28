@@ -6,6 +6,9 @@ NOTE: The code for the N Jets Estimation is designed to run on the LPC servers.
 
 # Running Instructions:
 ```
+git clone git@github.com:DisplacedHiggs/NJetsEstimate.git
+cd NJetsEstimate
+mkdir logs scripts
 bash createNJets.sh
 condor_submit submitNJets.condor
 bash prepareNJetsPlots.sh
