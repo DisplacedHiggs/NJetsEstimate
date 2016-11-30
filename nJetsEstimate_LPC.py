@@ -27,7 +27,7 @@ regionList = []
 numProductList = []
 
 denomProduct = "BASICCALOJETS1PT20"
-fileDir = "root://cmseos.fnal.gov//store/user/lpchbb/mwalker/AnalysisTrees/"
+fileDir = "root://cmseos.fnal.gov//store/user/lpchbb/mwalker/AnalysisTrees/" #used in makeNumDenom to derive efficiencies
 allTreesDir = "root://cmseos.fnal.gov//store/user/lpchbb/kreis/AnalysisTrees/"
 
 sampleList = []
@@ -84,12 +84,12 @@ for line in varFile.readlines():
 
 #Set deltaRmode to true if we want to parameterize 2D efficiencies in terms of deltaR
 #NOTE: the code is sometimes  modified to parameterize with nGoodVertices instead
-deltaRmode = False
+deltaRmode = True
 
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
 #if deltaRmode == True && singleEffMode == true then we get the efficiency as a function of only deltaR instead of a 2D parameterization with the first variable 
-singleEffMode = False
+singleEffMode = True
 if singleEffMode:
   LowBoundList[0] = -1000000000
   UpBoundList[0] = 1000000000
@@ -195,7 +195,7 @@ def makeEffiPlot(i,n,r):
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
@@ -286,7 +286,7 @@ def effiWriteToPDF():
         numProduct = numProductList[n]
         region = regionList[r]
 
-        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
+        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
 
         if not deltaRmode:
           effiPlot = TH1F(ff.Get("effi_%s_%s_%i"%(var,numProduct,r)))
@@ -754,7 +754,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   upBoundEff = UpBoundList[i]
   inFile = allTreesDir + sample + "/" + file
   
-  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
+  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
   if not deltaRmode:
     hEffi = fEffi.Get("effi_%s_%s_%i"%(var,numProduct,regionIndex))
   else:
@@ -897,9 +897,9 @@ def parseTree(numProduct,regionIndex,i,j,file):
     else:
       nEventsTotal += treeRtotal.GetEntries()
   
-  if nEventsTotal > 0:
-    nJetsBkg.Scale(1./nEventsTotal)
-    hEstBkg.Scale(1./nEventsTotal)
+  #if nEventsTotal > 0:
+    #nJetsBkg.Scale(1./nEventsTotal)
+    #hEstBkg.Scale(1./nEventsTotal)
   
   hList = [nJetsBkg, hEstBkg, numDistr, denomDistr]
   for h in hList:
@@ -970,7 +970,7 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
 
 if __name__ == '__main__': main()
