@@ -100,9 +100,9 @@ done < $varFile
 
 
 #paths on eos to store nJets data
-eos root://cmseos.fnal.gov rm -r /store/user/kreis/displaced_bkg_pt-dr_80X/nJets/
-eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X/nJets/
-eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X/nJets/effiFiles
+eos root://cmseos.fnal.gov rm -r /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/
+eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/
+eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles
 
 #path where analysis trees are stored
 allTreesDir=/store/user/lpchbb/kreis/AnalysisTrees/
@@ -118,7 +118,7 @@ do
     for k in "${!RegionList[@]}"
     do
       region=${RegionList[$k]}
-      eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X/nJets/${var}_${prod}_${k}
+      eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/${var}_${prod}_${k}
       python -c "from nJetsEstimate_LPC import makeEffiPlot; makeEffiPlot(${i},${j},${k})"
       for l in $(seq 0 $nBkgFiles)
       do
@@ -127,7 +127,7 @@ do
 	echo $product
 	echo $region
         echo $bkgFile
-        eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X/nJets/${var}_${prod}_${k}/bkg${l}
+        eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/${var}_${prod}_${k}/bkg${l}
       done
     done
   done
