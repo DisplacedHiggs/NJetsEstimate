@@ -122,6 +122,9 @@ def get_list_of_files(START, START_USER, STARTpath, SAMPLE, path):
 		#proc = subprocess.Popen(['srmls',options], stderr=subprocess.STDOUT, stdout=subprocess.PIPE).communicate()[0]
         #options = "lcg-ls -b -D srmv2 \"srm://"+siteDBDict[START][1]+":8443"+siteDBDict[START][2]+path+"\""
         options = "srmls -2 -pushmode=true \"srm://"+siteDBDict[START][1]+":8443"+siteDBDict[START][2]+path+"\""
+
+        options = "eos root://cmseos.fnal.gov/ ls " + path
+
         proc = subprocess.Popen(options, shell=True, stdout=subprocess.PIPE).communicate()[0]
 		# if output is too long
         #proc = subprocess.Popen(['srmls',options], stdout=tempfile.TemporaryFile()).communicate()[0]
@@ -139,6 +142,10 @@ def get_list_of_files(START, START_USER, STARTpath, SAMPLE, path):
     FILES = []
     for ss in SAMPLE:
         FILES += fnmatch.filter(FILES_UNFILTERED, '*'+ss+'*')
+
+    for f in FILES:
+        print f
+    
     return FILES
 
 def filter_list_of_files(SAMPLE, FILES_UNFILTERED):
@@ -179,12 +186,11 @@ def copytree(START, START_USER, STARTpath, src, dst, DEPTH, CURRENTdepth, symlin
         return
     
     make_directory(END,dst,PROTOCOL)
-
+    
+    print "make_directory done"
+    
     global SAMPLE
     FILES = get_list_of_files(START, START_USER, STARTpath, SAMPLE, src)
-    #print "get_list_of_files src:",src
-    #print "get_list_of_files STARTpath:",STARTpath
-    #print FILES
 
     if DIFF :
         FILES1 = FILES
@@ -220,7 +226,8 @@ def copytree(START, START_USER, STARTpath, src, dst, DEPTH, CURRENTdepth, symlin
             if symlinks and os.path.islink(srcname):
                 linkto = os.readlink(srcname)
                 os.symlink(linkto,dstname)
-            elif os.path.isdir(srcname) or (srcname[0]=="/" and srcname[-1]=="/" and PROTOCOL=="xrootd"):
+            #elif os.path.isdir(srcname) or (srcname[0]=="/" and srcname[-1]=="/" and PROTOCOL=="xrootd"):
+            elif os.path.isdir(srcname) or (srcname[0]=="/" and srcname[-1]!="t" and PROTOCOL=="xrootd"): #terrible hack that assumes everything except files ending in t (ie root) are directories
                 copytree(START, START_USER, STARTpath, srcname, dstname, DEPTH, CURRENTdepth+1, symlinks, ignore, PROTOCOL)
             else:
                 srel = os.path.relpath(src,src[:src.find(STARTpath)+len(STARTpath)])+"/"
