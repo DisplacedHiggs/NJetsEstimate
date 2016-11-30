@@ -10,7 +10,7 @@ do
     rm -rf $tempfile
   fi
   #sleep 30
-  condor_q stata >> $tempfile
+  condor_q kreis >> $tempfile
   if grep -q runNJets.sh "$tempfile"; then
     :
   else

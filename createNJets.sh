@@ -32,7 +32,7 @@ echo "request_disk = 10000000" >> $condorFile
 echo "request_memory = 2100" >> $condorFile
 echo "WhenTOTransferOutput  = ON_EXIT_OR_EVICT" >> $condorFile
 echo "Notification=never" >> $condorFile
-echo "notify_user = stata@physics.rutgers.edu" >> $condorFile
+echo "notify_user = kreis@fnal.gov" >> $condorFile
 echo 'x509userproxy = $ENV(X509_USER_PROXY)' >> $condorFile
 echo "Transfer_Input_Files = nJetsVars.list, ${CMSSW_VERSION}.tar.gz, nJetsEstimate_LPC.py" >> $condorFile
 echo "" >> $condorFile
@@ -100,12 +100,12 @@ done < $varFile
 
 
 #paths on eos to store nJets data
-eos root://cmseos.fnal.gov rm -r /store/user/stata/nJets/
-eos root://cmseos.fnal.gov mkdir -p /store/user/stata/nJets/
-eos root://cmseos.fnal.gov mkdir -p /store/user/stata/nJets/effiFiles
+eos root://cmseos.fnal.gov rm -r /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/
+eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/
+eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles
 
 #path where analysis trees are stored
-allTreesDir=/store/user/stata/AnalysisTrees
+allTreesDir=/store/user/lpchbb/kreis/AnalysisTrees/
 
 
 #set up nJets directory and create efficiencies
@@ -118,7 +118,7 @@ do
     for k in "${!RegionList[@]}"
     do
       region=${RegionList[$k]}
-      eos root://cmseos.fnal.gov mkdir -p /store/user/stata/nJets/${var}_${prod}_${k}
+      eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/${var}_${prod}_${k}
       python -c "from nJetsEstimate_LPC import makeEffiPlot; makeEffiPlot(${i},${j},${k})"
       for l in $(seq 0 $nBkgFiles)
       do
@@ -127,7 +127,7 @@ do
 	echo $product
 	echo $region
         echo $bkgFile
-        eos root://cmseos.fnal.gov mkdir -p /store/user/stata/nJets/${var}_${prod}_${k}/bkg${l}
+        eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/${var}_${prod}_${k}/bkg${l}
       done
     done
   done
