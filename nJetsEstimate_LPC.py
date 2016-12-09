@@ -113,6 +113,9 @@ def makeEffiPlot(i,n,r):
     numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
     denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
 
+  numDistrTotal.Sumw2()
+  denomDistrTotal.Sumw2()
+
   processes = []
   queues = []
   
@@ -191,7 +194,7 @@ def makeEffiPlot(i,n,r):
     j+=1
     
   effi = numDistrTotal.Clone()
-  effi.Divide(denomDistrTotal)
+  effi.Divide(denomDistrTotal) #BEN TODO: change to asymm 
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
@@ -217,7 +220,7 @@ def makeNumDenom(i,j,region,numProduct,queue):
     else:
       nEvents += treeR.GetEntries()      
     
-    nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
+    nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents) #BEN TODO: check sumw2
     
     if nSelected < 0:
       sys.exit("error selecting events with selection: " + region)
@@ -226,8 +229,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
     treeR.SetEntryList(elist)
     
     if not deltaRmode:
-      treeR.Draw("%s_%s>>num%i(%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff")
-      treeR.Draw("%s_%s>>den%i(%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff")
+      treeR.Draw("%s_%s>>num%i(%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff") #BEN TODO: check sumw2
+      treeR.Draw("%s_%s>>den%i(%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff") #BEN TODO: check sumw2
       hNum = TH1F(gDirectory.Get("num%i"%(j)))
       hDen = TH1F(gDirectory.Get("den%i"%(j)))
       hNum.SetDirectory(0)
@@ -240,8 +243,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
         denomDistr.Add(hDen)
         
     else:
-      treeR.Draw("BASICCALOJETS1PT20DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
-      treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      treeR.Draw("BASICCALOJETS1PT20DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")#BEN TODO check sumw2
+      treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")#BEN TODO check sumw2
       #treeR.Draw("NGOODVERTICES:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       hNum = TH2F(gDirectory.Get("num%i"%(j)))
@@ -255,8 +258,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
         numDistr.Add(hNum)
         denomDistr.Add(hDen)
         
-  numDistr.Sumw2()
-  denomDistr.Sumw2()
+  numDistr.Sumw2() #BEN TODO: this is too late.  histogram is already filled.
+  denomDistr.Sumw2() #BEN TODO: this is too late.  histogram is already filled.
   
   numDistr.Scale(xsecs[j]/nEvents)
   denomDistr.Scale(xsecs[j]/nEvents)
@@ -303,7 +306,7 @@ def effiWriteToPDF():
         
         hTmp = effiPlot.Clone()
         if r != 0:
-          hTmp.Divide(effRatios[0])
+          hTmp.Divide(effRatios[0]) 
           hTmp.SetTitle("eff ratio %s"%(region))
         else:
           hTmp.SetTitle("Eff in %s"%(region))
@@ -765,7 +768,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   treeR = ff.Get("treeR")
   treeR.SetWeight(1.0)
   nEvents = treeR.GetEntries()
-  nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
+  nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)#BEN TODO: check sumw2
   
   if nSelected < 0:
     sys.exit("error selecting events with selection: " + region)
@@ -782,12 +785,12 @@ def parseTree(numProduct,regionIndex,i,j,file):
     numDistr = TH2F("%s %s_%s"%(sample,var,numProduct),"%s %s_%s"%(sample,var,numProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
     denomDistr = TH2F("%s %s_%s"%(sample,var,denomProduct),"%s %s_%s"%(sample,var,denomProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
 
-  # hEffi = numDistr.Clone()
-  # hEffi.Divide(denomDistr)
-  # hEffi.SetName("%s Effi: %s"%(sample,var))
-  
+  numDistr.Sumw2()
+  denomDistr.Sumw2()
+
   nJetsBkg = TH1F("%s N%s"%(sample,numProduct),"%s N%s"%(sample,numProduct),10,0,10)
-  
+  nJetsBkg.Sumw2()
+
   hEstBkg = TH1F("estNbkg_%s"%(var),"estNbkg_%s"%(var),10,0,10)
   hEstBkg.SetName("%s Estimate: N%s %s"%(sample,numProduct,var))
 
@@ -879,11 +882,6 @@ def parseTree(numProduct,regionIndex,i,j,file):
       newErr2 = hEstBkg.GetBinError(k) + errorTermSq(vectProb,vectError,k) # increment err^2, will sqrt total error at end
       hEstBkg.SetBinError(k,newErr2)
     
-    
-  numDistr.Sumw2()
-  denomDistr.Sumw2()
-  nJetsBkg.Sumw2()
-  
   for k in range(0,10): # sqrt errors here
     hEstBkg.SetBinError(k,math.sqrt(hEstBkg.GetBinError(k)))
   
