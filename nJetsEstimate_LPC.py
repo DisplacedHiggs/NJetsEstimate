@@ -216,11 +216,11 @@ def makeNumDenom(i,j,region,numProduct,queue):
     treeR = ff.Get("treeR")
     treeR.SetWeight(1.0)
     if f == 0:
-      nEvents = treeR.GetEntries()
+      nEvents = treeR.GetEntries() #BEN TODO: change to external histogram value
     else:
       nEvents += treeR.GetEntries()      
     
-    nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents) #BEN TODO: check sumw2
+    nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
     
     if nSelected < 0:
       sys.exit("error selecting events with selection: " + region)
@@ -229,8 +229,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
     treeR.SetEntryList(elist)
     
     if not deltaRmode:
-      treeR.Draw("%s_%s>>num%i(%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff") #BEN TODO: check sumw2
-      treeR.Draw("%s_%s>>den%i(%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff") #BEN TODO: check sumw2
+      treeR.Draw("%s_%s>>num%i(%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff") 
+      treeR.Draw("%s_%s>>den%i(%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff")
       hNum = TH1F(gDirectory.Get("num%i"%(j)))
       hDen = TH1F(gDirectory.Get("den%i"%(j)))
       hNum.SetDirectory(0)
@@ -243,8 +243,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
         denomDistr.Add(hDen)
         
     else:
-      treeR.Draw("BASICCALOJETS1PT20DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")#BEN TODO check sumw2
-      treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")#BEN TODO check sumw2
+      treeR.Draw("BASICCALOJETS1PT20DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       hNum = TH2F(gDirectory.Get("num%i"%(j)))
@@ -258,8 +258,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
         numDistr.Add(hNum)
         denomDistr.Add(hDen)
         
-  numDistr.Sumw2() #BEN TODO: this is too late.  histogram is already filled.
-  denomDistr.Sumw2() #BEN TODO: this is too late.  histogram is already filled.
+  numDistr.Sumw2() #It's okay to call Sumw2 here because weight is 1 and then scaled later
+  denomDistr.Sumw2() 
   
   numDistr.Scale(xsecs[j]/nEvents)
   denomDistr.Scale(xsecs[j]/nEvents)
@@ -768,7 +768,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   treeR = ff.Get("treeR")
   treeR.SetWeight(1.0)
   nEvents = treeR.GetEntries()
-  nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)#BEN TODO: check sumw2
+  nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
   
   if nSelected < 0:
     sys.exit("error selecting events with selection: " + region)
@@ -785,7 +785,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
     numDistr = TH2F("%s %s_%s"%(sample,var,numProduct),"%s %s_%s"%(sample,var,numProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
     denomDistr = TH2F("%s %s_%s"%(sample,var,denomProduct),"%s %s_%s"%(sample,var,denomProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
 
-  numDistr.Sumw2()
+  numDistr.Sumw2()#It's okay to call Sumw2 here because weight is 1 
   denomDistr.Sumw2()
 
   nJetsBkg = TH1F("%s N%s"%(sample,numProduct),"%s N%s"%(sample,numProduct),10,0,10)
@@ -886,6 +886,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
     hEstBkg.SetBinError(k,math.sqrt(hEstBkg.GetBinError(k)))
   
   # scale by number of total events in hadded files
+  # Ben: should change this to 1./(noCutSignature_COUNT->GetBinContent(1)) i believe -- here and all n events!
   for f in range(0,len(filesBkg[j])):
     #fTotal = TFile.Open(fileDir + filesBkg[j][f].split('/')[-1])
     fTotal = TFile.Open("root://cmseos.fnal.gov/" + filesBkg[j][f])
@@ -895,9 +896,9 @@ def parseTree(numProduct,regionIndex,i,j,file):
     else:
       nEventsTotal += treeRtotal.GetEntries()
   
-  #if nEventsTotal > 0:
-    #nJetsBkg.Scale(1./nEventsTotal)
-    #hEstBkg.Scale(1./nEventsTotal)
+  if nEventsTotal > 0:
+    nJetsBkg.Scale(1./nEventsTotal)
+    hEstBkg.Scale(1./nEventsTotal)
   
   hList = [nJetsBkg, hEstBkg, numDistr, denomDistr]
   for h in hList:
