@@ -60,8 +60,8 @@ done < $varFile
 
 rm -rf yNJets
 mkdir yNJets
-#xrdcp -r root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/ ./yNJets #ben: i don't think this works
-python movefiles.py T3_US_FNAL displaced_bkg_pt-dr_80X_2D/nJets/ local $PWD/yNJets -r -p xrootd
+##xrdcp -r root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/ ./yNJets #ben: i don't think this works
+python movefiles.py T3_US_FNAL displaced_bkg_pt-dr_80X_2D_DYonly/nJets/ local $PWD/yNJets -r -p xrootd
 
 
 for i in "${!VarList[@]}"
@@ -75,16 +75,18 @@ do
     do
       for l in "${!BkgFileList[@]}"
       do
-        haddR -f yNJets/${var}_${prod}_${k}/testDistr${l}.root yNJets/${var}_${prod}_${k}/bkg${l}/*.root
-	#haddR -f -c ${var}_${prod}_${k}testDistr${l}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/bkg${l}/ | grep "\.root"`
-	#xrdcp ${var}_${prod}_${k}testDistr${l}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/testDistr${l}.root
-	#rm ${var}_${prod}_${k}testDistr${l}.root
+        python hadd_many.py "yNJets/${var}_${prod}_${k}/testDistr${l}.root" "yNJets/${var}_${prod}_${k}/bkg${l}/*.root"
+	#haddR -f yNJets/${var}_${prod}_${k}/testDistr${l}.root yNJets/${var}_${prod}_${k}/bkg${l}/*.root
+	##haddR -f -c ${var}_${prod}_${k}testDistr${l}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/bkg${l}/ | grep "\.root"`
+	##xrdcp ${var}_${prod}_${k}testDistr${l}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/testDistr${l}.root
+	##rm ${var}_${prod}_${k}testDistr${l}.root
 	:
       done
-      haddR -f yNJets/testDistr_${var}_${prod}_${k}.root yNJets/${var}_${prod}_${k}/testDistr*
-      #haddR -f -c testDistr_${var}_${prod}_${k}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/ | grep "testDistr"`
-      #xrdcp testDistr_${var}_${prod}_${k}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/testDistr_${var}_${prod}_${k}.root
-      #rm testDistr_${var}_${prod}_${k}.root
+      python hadd_many.py "yNJets/testDistr_${var}_${prod}_${k}.root" "yNJets/${var}_${prod}_${k}/testDistr*"
+      #haddR -f yNJets/testDistr_${var}_${prod}_${k}.root yNJets/${var}_${prod}_${k}/testDistr*
+      ##haddR -f -c testDistr_${var}_${prod}_${k}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/ | grep "testDistr"`
+      ##xrdcp testDistr_${var}_${prod}_${k}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/testDistr_${var}_${prod}_${k}.root
+      ##rm testDistr_${var}_${prod}_${k}.root
       :
     done
   done

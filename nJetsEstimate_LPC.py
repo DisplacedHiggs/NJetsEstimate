@@ -89,7 +89,7 @@ deltaRmode = True
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
 #if deltaRmode == True && singleEffMode == true then we get the efficiency as a function of only deltaR instead of a 2D parameterization with the first variable 
-singleEffMode = True
+singleEffMode = False
 if singleEffMode:
   LowBoundList[0] = -1000000000
   UpBoundList[0] = 1000000000
@@ -112,6 +112,9 @@ def makeEffiPlot(i,n,r):
   else:
     numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
     denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
+
+  numDistrTotal.Sumw2()
+  denomDistrTotal.Sumw2()
 
   processes = []
   queues = []
@@ -191,7 +194,7 @@ def makeEffiPlot(i,n,r):
     j+=1
     
   effi = numDistrTotal.Clone()
-  effi.Divide(denomDistrTotal)
+  effi.Divide(denomDistrTotal) #BEN TODO: change to asymm 
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
@@ -210,14 +213,15 @@ def makeNumDenom(i,j,region,numProduct,queue):
     inFile = "root://cmseos.fnal.gov/" + filesBkg[j][f]
     print inFile
     ff = TFile.Open(inFile)
+    count_hist = ff.Get("noCutSignature_COUNT")
     treeR = ff.Get("treeR")
     treeR.SetWeight(1.0)
     if f == 0:
-      nEvents = treeR.GetEntries()
+      nEvents = count_hist.GetBinContent(1)
     else:
-      nEvents += treeR.GetEntries()      
+      nEvents += count_hist.GetBinContent(1)
     
-    nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
+    nSelected = treeR.Draw(">>elist", region, "entrylist")
     
     if nSelected < 0:
       sys.exit("error selecting events with selection: " + region)
@@ -226,7 +230,7 @@ def makeNumDenom(i,j,region,numProduct,queue):
     treeR.SetEntryList(elist)
     
     if not deltaRmode:
-      treeR.Draw("%s_%s>>num%i(%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff")
+      treeR.Draw("%s_%s>>num%i(%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff") 
       treeR.Draw("%s_%s>>den%i(%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i]),"","goff")
       hNum = TH1F(gDirectory.Get("num%i"%(j)))
       hDen = TH1F(gDirectory.Get("den%i"%(j)))
@@ -255,8 +259,8 @@ def makeNumDenom(i,j,region,numProduct,queue):
         numDistr.Add(hNum)
         denomDistr.Add(hDen)
         
-  numDistr.Sumw2()
-  denomDistr.Sumw2()
+  numDistr.Sumw2() #It's okay to call Sumw2 here because weight is 1 and then scaled later
+  denomDistr.Sumw2() 
   
   numDistr.Scale(xsecs[j]/nEvents)
   denomDistr.Scale(xsecs[j]/nEvents)
@@ -303,7 +307,7 @@ def effiWriteToPDF():
         
         hTmp = effiPlot.Clone()
         if r != 0:
-          hTmp.Divide(effRatios[0])
+          hTmp.Divide(effRatios[0]) 
           hTmp.SetTitle("eff ratio %s"%(region))
         else:
           hTmp.SetTitle("Eff in %s"%(region))
@@ -762,10 +766,11 @@ def parseTree(numProduct,regionIndex,i,j,file):
   hEffi.SetDirectory(0)
 
   ff = TFile.Open(inFile)
+  count_hist = ff.Get("noCutSignature_COUNT")
   treeR = ff.Get("treeR")
   treeR.SetWeight(1.0)
-  nEvents = treeR.GetEntries()
-  nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
+  nEvents = count_hist.GetBinContent(1)
+  nSelected = treeR.Draw(">>elist", region, "entrylist")
   
   if nSelected < 0:
     sys.exit("error selecting events with selection: " + region)
@@ -782,12 +787,12 @@ def parseTree(numProduct,regionIndex,i,j,file):
     numDistr = TH2F("%s %s_%s"%(sample,var,numProduct),"%s %s_%s"%(sample,var,numProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
     denomDistr = TH2F("%s %s_%s"%(sample,var,denomProduct),"%s %s_%s"%(sample,var,denomProduct),nBinsEff,lowBoundEff,upBoundEff,8,0,4)
 
-  # hEffi = numDistr.Clone()
-  # hEffi.Divide(denomDistr)
-  # hEffi.SetName("%s Effi: %s"%(sample,var))
-  
+  numDistr.Sumw2()#It's okay to call Sumw2 here because weight is 1 
+  denomDistr.Sumw2()
+
   nJetsBkg = TH1F("%s N%s"%(sample,numProduct),"%s N%s"%(sample,numProduct),10,0,10)
-  
+  nJetsBkg.Sumw2()
+
   hEstBkg = TH1F("estNbkg_%s"%(var),"estNbkg_%s"%(var),10,0,10)
   hEstBkg.SetName("%s Estimate: N%s %s"%(sample,numProduct,var))
 
@@ -879,11 +884,6 @@ def parseTree(numProduct,regionIndex,i,j,file):
       newErr2 = hEstBkg.GetBinError(k) + errorTermSq(vectProb,vectError,k) # increment err^2, will sqrt total error at end
       hEstBkg.SetBinError(k,newErr2)
     
-    
-  numDistr.Sumw2()
-  denomDistr.Sumw2()
-  nJetsBkg.Sumw2()
-  
   for k in range(0,10): # sqrt errors here
     hEstBkg.SetBinError(k,math.sqrt(hEstBkg.GetBinError(k)))
   
@@ -891,15 +891,16 @@ def parseTree(numProduct,regionIndex,i,j,file):
   for f in range(0,len(filesBkg[j])):
     #fTotal = TFile.Open(fileDir + filesBkg[j][f].split('/')[-1])
     fTotal = TFile.Open("root://cmseos.fnal.gov/" + filesBkg[j][f])
+    count_hist = fTotal.Get("noCutSignature_COUNT")
     treeRtotal = fTotal.Get("treeR")
     if f == 0:
-      nEventsTotal = treeRtotal.GetEntries()
+      nEventsTotal = count_hist.GetBinContent(1)
     else:
-      nEventsTotal += treeRtotal.GetEntries()
+      nEventsTotal += count_hist.GetBinContent(1)
   
-  #if nEventsTotal > 0:
-    #nJetsBkg.Scale(1./nEventsTotal)
-    #hEstBkg.Scale(1./nEventsTotal)
+  if nEventsTotal > 0:
+    nJetsBkg.Scale(1./nEventsTotal)
+    hEstBkg.Scale(1./nEventsTotal)
   
   hList = [nJetsBkg, hEstBkg, numDistr, denomDistr]
   for h in hList:
