@@ -58,10 +58,10 @@ do
   fi
 done < $varFile
 
-#rm -rf yNJets
-#mkdir yNJets
+rm -rf yNJets
+mkdir yNJets
 ##xrdcp -r root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/ ./yNJets #ben: i don't think this works
-#python movefiles.py T3_US_FNAL displaced_bkg_pt-dr_80X_2D_DYonly/nJets/ local $PWD/yNJets -r -p xrootd
+python movefiles.py T3_US_FNAL displaced_bkg_pt-dr_80X_2D_DYonly/nJets/ local $PWD/yNJets -r -p xrootd
 
 
 for i in "${!VarList[@]}"
