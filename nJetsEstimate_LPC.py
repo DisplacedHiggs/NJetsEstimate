@@ -213,14 +213,15 @@ def makeNumDenom(i,j,region,numProduct,queue):
     inFile = "root://cmseos.fnal.gov/" + filesBkg[j][f]
     print inFile
     ff = TFile.Open(inFile)
+    count_hist = ff.Get("noCutSignature_COUNT")
     treeR = ff.Get("treeR")
     treeR.SetWeight(1.0)
     if f == 0:
-      nEvents = treeR.GetEntries() #BEN TODO: change to external histogram value
+      nEvents = count_hist.GetBinContent(1)
     else:
-      nEvents += treeR.GetEntries()      
+      nEvents += count_hist.GetBinContent(1)
     
-    nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
+    nSelected = treeR.Draw(">>elist", region, "entrylist")
     
     if nSelected < 0:
       sys.exit("error selecting events with selection: " + region)
@@ -765,10 +766,11 @@ def parseTree(numProduct,regionIndex,i,j,file):
   hEffi.SetDirectory(0)
 
   ff = TFile.Open(inFile)
+  count_hist = ff.Get("noCutSignature_COUNT")
   treeR = ff.Get("treeR")
   treeR.SetWeight(1.0)
-  nEvents = treeR.GetEntries()
-  nSelected = treeR.Draw(">>elist", region, "entrylist", nEvents)
+  nEvents = count_hist.GetBinContent(1)
+  nSelected = treeR.Draw(">>elist", region, "entrylist")
   
   if nSelected < 0:
     sys.exit("error selecting events with selection: " + region)
@@ -886,15 +888,15 @@ def parseTree(numProduct,regionIndex,i,j,file):
     hEstBkg.SetBinError(k,math.sqrt(hEstBkg.GetBinError(k)))
   
   # scale by number of total events in hadded files
-  # Ben: should change this to 1./(noCutSignature_COUNT->GetBinContent(1)) i believe -- here and all n events!
   for f in range(0,len(filesBkg[j])):
     #fTotal = TFile.Open(fileDir + filesBkg[j][f].split('/')[-1])
     fTotal = TFile.Open("root://cmseos.fnal.gov/" + filesBkg[j][f])
+    count_hist = fTotal.Get("noCutSignature_COUNT")
     treeRtotal = fTotal.Get("treeR")
     if f == 0:
-      nEventsTotal = treeRtotal.GetEntries()
+      nEventsTotal = count_hist.GetBinContent(1)
     else:
-      nEventsTotal += treeRtotal.GetEntries()
+      nEventsTotal += count_hist.GetBinContent(1)
   
   if nEventsTotal > 0:
     nJetsBkg.Scale(1./nEventsTotal)
