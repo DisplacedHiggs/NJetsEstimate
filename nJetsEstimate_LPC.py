@@ -89,7 +89,7 @@ deltaRmode = True
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
 #if deltaRmode == True && singleEffMode == true then we get the efficiency as a function of only deltaR instead of a 2D parameterization with the first variable 
-singleEffMode = True
+singleEffMode = False
 if singleEffMode:
   LowBoundList[0] = -1000000000
   UpBoundList[0] = 1000000000
