@@ -24,25 +24,19 @@ INCLUSIVETAGGEDCALOJETSC
 <END>
 
 <BKG_FILES>
-#WH_HToSSTobbbb_WToLNu_MH125_MS40_ctauS1000_13TeV 831.76
-#WH_HToSSTobbbb_WToLNu_MH125_MS40_ctauS100_13TeV 420.80085
-TT_TuneCUETP8M1_13TeV-powheg-pythia8 730
-#WH_HToBB_WToLNu_M125_13TeV_amcatnloFXFX_madspin_pythia8 1.369*0.577*0.324
+TT_TuneCUETP8M1_13TeV-powheg-pythia8 831.76
 ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1 10.11
 ST_t-channel_antitop_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1 26.23
 ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1 44.09
-#ST_tW_antitop_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1 35.6
-#ST_tW_top_5f_DS_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1 35.6
 ST_tW_antitop_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1 38.09
 ST_tW_top_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1 38.09
-WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 61526.7
+WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 61467
 ZH_HToBB_ZToLL_M125_13TeV_powheg_pythia8 0.8696*0.577*0.102
-DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 6025.2
+DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 6025
 DYJetsToLL_M-5to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 7160
-#ZHToTauTau_M125_13TeV_powheg_pythia8 0.8696*0.0622
-WZ_TuneCUETP8M1_13TeV-pythia8 22.82
+WZ_TuneCUETP8M1_13TeV-pythia8 63
 ZZ_TuneCUETP8M1_13TeV-pythia8 10.32
-WW_TuneCUETP8M1_13TeV-pythia8 63.21
+WW_TuneCUETP8M1_13TeV-pythia8 118.7
 <END>
 
 <DENOM_PRODUCT>
