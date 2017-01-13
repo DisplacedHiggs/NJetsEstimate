@@ -89,7 +89,7 @@ deltaRmode = True
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
 #if deltaRmode == True && singleEffMode == true then we get the efficiency as a function of only deltaR instead of a 2D parameterization with the first variable 
-singleEffMode = False
+singleEffMode = True
 if singleEffMode:
   LowBoundList[0] = -1000000000
   UpBoundList[0] = 1000000000
@@ -198,7 +198,7 @@ def makeEffiPlot(i,n,r):
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_fixSelOnly/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
@@ -221,7 +221,7 @@ def makeNumDenom(i,j,region,numProduct,queue):
     else:
       nEvents += count_hist.GetBinContent(1)
     
-    nSelected = treeR.Draw(">>elist", region, "entrylist")
+    nSelected = treeR.Draw(">>elist", region, "entrylist")#Hadded trees
     
     if nSelected < 0:
       sys.exit("error selecting events with selection: " + region)
@@ -290,7 +290,7 @@ def effiWriteToPDF():
         numProduct = numProductList[n]
         region = regionList[r]
 
-        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
+        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_fixSelOnly/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
 
         if not deltaRmode:
           effiPlot = TH1F(ff.Get("effi_%s_%s_%i"%(var,numProduct,r)))
@@ -758,7 +758,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   upBoundEff = UpBoundList[i]
   inFile = allTreesDir + sample + "/" + file
   
-  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
+  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_fixSelOnly/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
   if not deltaRmode:
     hEffi = fEffi.Get("effi_%s_%s_%i"%(var,numProduct,regionIndex))
   else:
@@ -770,7 +770,10 @@ def parseTree(numProduct,regionIndex,i,j,file):
   treeR = ff.Get("treeR")
   treeR.SetWeight(1.0)
   nEvents = count_hist.GetBinContent(1)
-  nSelected = treeR.Draw(">>elist", region, "entrylist")
+ 
+  region = region + " && (hasGoodVertex && (hasSingleElTriggers || hasSingleMuTriggers) && (NGOODMUONS[0] + NGOODELECTRONS[0]) > 0)"
+  print "REGION " + region
+  nSelected = treeR.Draw(">>elist", region, "entrylist")#BEN SELECTION
   
   if nSelected < 0:
     sys.exit("error selecting events with selection: " + region)
@@ -832,24 +835,23 @@ def parseTree(numProduct,regionIndex,i,j,file):
       #print "tagged deltaR - " + str(len(taggedValsDeltaR)) 
       #print list(taggedValsDeltaR)
       
-      # next two blocks commented out b/c NGOODVERTCIES
-
-      #if len(taggedVals) == 1:
-        #numDistr.Fill(taggedVals[0],0)
-      #else:
-        #for itr in range(0,len(taggedVals)):
-          #numDistr.Fill(taggedVals[itr],taggedValsDeltaR[itr])
-      for itr in range(0,len(taggedVals)):
-        numDistr.Fill(taggedVals[itr],taggedValsDeltaR[0])
+      # reverse comments for NGOODVERTICES !!
+      if len(taggedVals) == 1:
+        numDistr.Fill(taggedVals[0],0)
+      else:
+        for itr in range(0,len(taggedVals)):
+          numDistr.Fill(taggedVals[itr],taggedValsDeltaR[itr])
+      #for itr in range(0,len(taggedVals)):
+      #  numDistr.Fill(taggedVals[itr],taggedValsDeltaR[0])
 
     
-      #if len(vectVals) == 1:
-        #denomDistr.Fill(vectVals[0],0)
-      #else:
-        #for itr in range(0,len(vectVals)):
-          #denomDistr.Fill(vectVals[itr],vectValsDeltaR[itr])
-      for itr in range(0,len(vectVals)):
-        denomDistr.Fill(vectVals[itr],vectValsDeltaR[0])
+      if len(vectVals) == 1:
+        denomDistr.Fill(vectVals[0],0)
+      else:
+        for itr in range(0,len(vectVals)):
+          denomDistr.Fill(vectVals[itr],vectValsDeltaR[itr])
+      #for itr in range(0,len(vectVals)):
+        #denomDistr.Fill(vectVals[itr],vectValsDeltaR[0])
 
     
     nTagged = len(taggedVals)
@@ -971,7 +973,7 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr_80X_2D/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_fixSelOnly/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
 
 if __name__ == '__main__': main()
