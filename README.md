@@ -9,8 +9,8 @@ git clone git@github.com:DisplacedHiggs/NJetsEstimate.git
 cd NJetsEstimate
 mkdir logs scripts
 ```
-Make sure the input and output directories are correct in nJetsVar.list.
-In nJetsEstimate_LPC.py, you have the choice to set deltaRmode and singleEffMode to true or false.
+Make sure the input and output directories are correct in nJetsVars.list (and the rest of your variable choices).
+Also, in nJetsEstimate_LPC.py, you have the choice to set deltaRmode and singleEffMode to true or false.
 
 Warning: If you change the "deltaR" variable in nJetsEstimate_LPC.py to an event-level, rather than jet-level quantity, it gets a bit messy.
 You must use special jet-entry trees and follow "reverse comments for NGOODVERTICES" comment.  This is set up in the njet branch.
