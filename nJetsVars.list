@@ -31,7 +31,7 @@ ST_t-channel_top_4f_leptonDecays_13TeV-powheg-pythia8_TuneCUETP8M1 44.09
 ST_tW_antitop_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1 38.09
 ST_tW_top_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1 38.09
 WJetsToLNu_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 61467
-ZH_HToBB_ZToLL_M125_13TeV_powheg_pythia8 0.8696*0.577*0.102
+#ZH_HToBB_ZToLL_M125_13TeV_powheg_pythia8 0.8696*0.577*0.102
 DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 6025
 DYJetsToLL_M-5to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8 7160
 WZ_TuneCUETP8M1_13TeV-pythia8 63
@@ -41,5 +41,5 @@ WW_TuneCUETP8M1_13TeV-pythia8 118.7
 
 <DENOM_PRODUCT>
 #BASICCALOJETS1
-BASICCALOJETS1PT20
+BASICCALOJETS1PT20MATCHED
 <END>

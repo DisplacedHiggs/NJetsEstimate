@@ -26,9 +26,9 @@ regionList = []
 
 numProductList = []
 
-denomProduct = "BASICCALOJETS1PT20"
-fileDir = "root://cmseos.fnal.gov//store/user/lpchbb/mwalker/AnalysisTrees/" #used in makeNumDenom to derive efficiencies
-allTreesDir = "root://cmseos.fnal.gov//store/user/lpchbb/kreis/AnalysisTrees/"
+denomProduct = "BASICCALOJETS1PT20MATCHED"
+fileDir = "root://cmseos.fnal.gov//store/user/lpchbb/noreplica/stata/AnalysisTrees/addedHistos/" #used in makeNumDenom to derive efficiencies
+allTreesDir = "root://cmseos.fnal.gov//store/user/lpchbb/noreplica/stata/AnalysisTrees/"
 
 sampleList = []
 filesBkg = []
@@ -69,8 +69,8 @@ for line in varFile.readlines():
     splitLine = line.split(" ")
     sample = str(splitLine[0])
     if "root://cmseos.fnal.gov" in fileDir:
-      #fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample)).read().split("\n")[:-1]
-      fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s%s%s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample,"/addedHistos/",sample)).read().split("\n")[:-1]
+      fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample)).read().split("\n")[:-1]
+      #fileList = os.popen("xrdfs root://cmseos.fnal.gov/ ls %s%s%s | grep %s"%(fileDir.split("root://cmseos.fnal.gov/")[-1],sample,"/addedHistos/",sample)).read().split("\n")[:-1]
     else:
       fileList = os.popen("ls %s | grep %s"%(fileDir,sample)).read().split("\n")[:-1]
     
@@ -110,8 +110,11 @@ def makeEffiPlot(i,n,r):
     numDistrTotal = TH1F("num_%s_%s_%i"%(var,numProduct,r),"num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i])
     denomDistrTotal = TH1F("denom_%s_%s_%i"%(var,numProduct,r),"denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i])
   else:
-    numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
-    denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
+    #numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
+    #denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4)
+    numDistrTotal = TH2F("DELTAR_num_%s_%s_%i"%(var,numProduct,r),"DELTAR_num_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],7,1,8)
+    denomDistrTotal = TH2F("DELTAR_denom_%s_%s_%i"%(var,numProduct,r),"DELTAR_denom_%s_%s_%i"%(var,numProduct,r),NBinsList[i],LowBoundList[i],UpBoundList[i],7,1,8)
+
 
   numDistrTotal.Sumw2()
   denomDistrTotal.Sumw2()
@@ -197,8 +200,14 @@ def makeEffiPlot(i,n,r):
   effi.Divide(denomDistrTotal) #BEN TODO: change to asymm 
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
-  
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+
+  #print effi.GetNcells()
+  #print "BIN CONTENT" 
+  #for b in range(1,effi.GetNcells()):
+  #  print effi.GetBinContent(b)
+  #print "END BIN CONTENT"
+
+  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan30_test/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
@@ -214,8 +223,12 @@ def makeNumDenom(i,j,region,numProduct,queue):
     print inFile
     ff = TFile.Open(inFile)
     count_hist = ff.Get("noCutSignature_COUNT")
-    treeR = ff.Get("treeR")
-    treeR.SetWeight(1.0)
+    treeR = ff.Get("tree_BASICCALOJETS1PT20MATCHED")
+    try:
+      treeR.SetWeight(1.0)
+    except:
+      print "SET WEIGHT ERROR ------ " + str(inFile)
+      continue
     if f == 0:
       nEvents = count_hist.GetBinContent(1)
     else:
@@ -244,8 +257,12 @@ def makeNumDenom(i,j,region,numProduct,queue):
         denomDistr.Add(hDen)
         
     else:
-      treeR.Draw("BASICCALOJETS1PT20DELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
-      treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      tag_cuts = "ALPHAMAX_BASICCALOJETS1PT20MATCHED<0.25 && MEDIANIPLOG10SIG_BASICCALOJETS1PT20MATCHED>0.5"
+      #treeR.Draw("BASICCALOJETS1PT20MATCHEDDELTAR_%s:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(numProduct,var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      #treeR.Draw("SELFDELTAR_%s:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(denomProduct,var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],8,0,4),"","goff")
+      #treeR.Draw("NBASICCALOJETS1PT20MATCHED:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],7,1,8),"","goff")
+      treeR.Draw("NBASICCALOJETS1PT20MATCHED:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],7,1,8),tag_cuts,"goff")
+      treeR.Draw("NBASICCALOJETS1PT20MATCHED:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],7,1,8),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>num%i(%i,%f,%f,%i,%f,%f)"%(var,numProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       #treeR.Draw("NGOODVERTICES:%s_%s>>den%i(%i,%f,%f,%i,%f,%f)"%(var,denomProduct,j,NBinsList[i],LowBoundList[i],UpBoundList[i],20,0,40),"","goff")
       hNum = TH2F(gDirectory.Get("num%i"%(j)))
@@ -262,6 +279,14 @@ def makeNumDenom(i,j,region,numProduct,queue):
   numDistr.Sumw2() #It's okay to call Sumw2 here because weight is 1 and then scaled later
   denomDistr.Sumw2() 
   
+  #print "NUM CONTENT"
+  #print "X " + str(numDistr.GetNbinsX())
+  #print "Y " + str(numDistr.GetNbinsY())
+  #for b in range(1,numDistr.GetNcells()):
+  #  print numDistr.GetBinContent(b)
+  #for b in range(1,numDistr.GetNbinsY()+1):
+  #  print numDistr.GetBinContent(1,b)
+
   numDistr.Scale(xsecs[j]/nEvents)
   denomDistr.Scale(xsecs[j]/nEvents)
   
@@ -290,7 +315,7 @@ def effiWriteToPDF():
         numProduct = numProductList[n]
         region = regionList[r]
 
-        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
+        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan30_test/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
 
         if not deltaRmode:
           effiPlot = TH1F(ff.Get("effi_%s_%s_%i"%(var,numProduct,r)))
@@ -353,15 +378,17 @@ def effiWriteToPDF():
         else:
           for h in [effiPlot,numPlot,denomPlot]:
             h.GetXaxis().SetTitle(var)
-            h.GetYaxis().SetTitle("DELTAR_BASICCALOJETS1PT20")
+            #h.GetYaxis().SetTitle("DELTAR_BASICCALOJETS1PT20")
             #h.GetYaxis().SetTitle("NGOODVERTICES")
-            
+            h.GetYaxis().SetTitle("NBASICCALOJETS1PT20MATCHED")
+
           pad = canvas.cd(1)
           pad.SetRightMargin(0.15)
           if singleEffMode and i == 0:
             #pad.SetLogy()
-            effiPlot.SetTitle("Eff wrt DR nearest")
+            #effiPlot.SetTitle("Eff wrt DR nearest")
             #effiPlot.SetTitle("Eff wrt NGOODVERTICES")
+            effiPlot.SetTitle("Eff wrt NBASICCALOJETS1PT20MATCHED")
             effiPlot.ProjectionY().Draw("e1")
           else:
             # pad.SetLogz()
@@ -597,8 +624,8 @@ def makeEstimateHistos():
         ratioPlot.SetLineColor(kGreen)
         ratioPlot.SetLineWidth(1)
         ratioPlot.SetMarkerStyle(25)
-        ratioPlot.SetMinimum(0);
-        ratioPlot.SetMaximum(3);
+        ratioPlot.SetMinimum(0)
+        ratioPlot.SetMaximum(3)
 
         legend = TLegend(0.80,0.75,0.98,0.98)
         legend.AddEntry(nJetsDistr,"actual distr.")
@@ -758,7 +785,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   upBoundEff = UpBoundList[i]
   inFile = allTreesDir + sample + "/" + file
   
-  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
+  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan30_test/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
   if not deltaRmode:
     hEffi = fEffi.Get("effi_%s_%s_%i"%(var,numProduct,regionIndex))
   else:
@@ -771,7 +798,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   treeR.SetWeight(1.0)
   nEvents = count_hist.GetBinContent(1)
  
-  region = region + " && (hasGoodVertex && (hasSingleElTriggers || hasSingleMuTriggers) && (NGOODMUONS[0] + NGOODELECTRONS[0]) > 0)"
+  region = region + " && (hasGoodVertex && (NGOODMUONS[0] + NGOODELECTRONS[0]) > 0)"
   print "REGION " + region
   nSelected = treeR.Draw(">>elist", region, "entrylist")#BEN SELECTION
   
@@ -802,7 +829,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   print "drew distributions"
   
   treeR.SetBranchStatus("*",0)
-  for b in ["SELFDELTAR_%s"%(denomProduct),"BASICCALOJETS1PT20DELTAR_%s"%(numProduct),"%s_%s"%(var,denomProduct),"%s_%s"%(var,numProduct),"NGOODVERTICES"]:
+  for b in ["%s_%s"%(var,denomProduct),"%s_%s"%(var,numProduct),"NBASICCALOJETS1PT20MATCHED"]:
     treeR.SetBranchStatus(b,1)
   
 
@@ -817,11 +844,13 @@ def parseTree(numProduct,regionIndex,i,j,file):
       for x in vectVals: denomDistr.Fill(x)
       for x in taggedVals: numDistr.Fill(x)
     else:
-      vectValsDeltaR   = getattr(treeR,"SELFDELTAR_%s"%(denomProduct))
-      taggedValsDeltaR = getattr(treeR,"BASICCALOJETS1PT20DELTAR_%s"%(numProduct))
+      #vectValsDeltaR   = getattr(treeR,"SELFDELTAR_%s"%(denomProduct))
+      #taggedValsDeltaR = getattr(treeR,"BASICCALOJETS1PT20MATCHEDDELTAR_%s"%(numProduct))
       #vectValsDeltaR = list(treeR.NGOODVERTICES)
       #taggedValsDeltaR = list(treeR.NGOODVERTICES)
-      
+      vectValsDeltaR = list(treeR.NBASICCALOJETS1PT20MATCHED)
+      taggedValsDeltaR = list(treeR.NBASICCALOJETS1PT20MATCHED)
+
       #print statements for debugging
       #print "//////////////////////////////"
       #print "Event Number: " + str(n)
@@ -836,22 +865,22 @@ def parseTree(numProduct,regionIndex,i,j,file):
       #print list(taggedValsDeltaR)
       
       # reverse comments for NGOODVERTICES !!
-      if len(taggedVals) == 1:
-        numDistr.Fill(taggedVals[0],0)
-      else:
-        for itr in range(0,len(taggedVals)):
-          numDistr.Fill(taggedVals[itr],taggedValsDeltaR[itr])
-      #for itr in range(0,len(taggedVals)):
-      #  numDistr.Fill(taggedVals[itr],taggedValsDeltaR[0])
+      #if len(taggedVals) == 1:
+      #  numDistr.Fill(taggedVals[0],0)
+      #else:
+      #  for itr in range(0,len(taggedVals)):
+      #    numDistr.Fill(taggedVals[itr],taggedValsDeltaR[itr])
+      for itr in range(0,len(taggedVals)):
+        numDistr.Fill(taggedVals[itr],taggedValsDeltaR[0])
 
     
-      if len(vectVals) == 1:
-        denomDistr.Fill(vectVals[0],0)
-      else:
-        for itr in range(0,len(vectVals)):
-          denomDistr.Fill(vectVals[itr],vectValsDeltaR[itr])
-      #for itr in range(0,len(vectVals)):
-        #denomDistr.Fill(vectVals[itr],vectValsDeltaR[0])
+      #if len(vectVals) == 1:
+      #  denomDistr.Fill(vectVals[0],0)
+      #else:
+      #  for itr in range(0,len(vectVals)):
+      #    denomDistr.Fill(vectVals[itr],vectValsDeltaR[itr])
+      for itr in range(0,len(vectVals)):
+        denomDistr.Fill(vectVals[itr],vectValsDeltaR[0])
 
     
     nTagged = len(taggedVals)
@@ -869,8 +898,8 @@ def parseTree(numProduct,regionIndex,i,j,file):
         vectProb.append(hEffi.GetBinContent(hEffi.FindBin(x)))
     else:
       for itr in range(0,len(vectVals)):
-        vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
-        #vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
+        #vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
+        vectProb.append(hEffi.GetBinContent(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
        
     vectError = []
     if not deltaRmode:
@@ -878,8 +907,8 @@ def parseTree(numProduct,regionIndex,i,j,file):
         vectError.append(hEffi.GetBinError(hEffi.FindBin(x)))
     else:
       for itr in range(0,len(vectVals)):
-        vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
-        #vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
+        #vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[itr])))
+        vectError.append(hEffi.GetBinError(hEffi.FindBin(vectVals[itr],vectValsDeltaR[0]))) #NGOODVERTICES
 
     for k in range(0,10):
       hEstBkg.Fill(k,binomialTerm(vectProb,k))
@@ -973,7 +1002,7 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan30_test/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
 
 if __name__ == '__main__': main()
