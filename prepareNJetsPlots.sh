@@ -3,12 +3,18 @@
 varFile=nJetsVars.list
 
 parseModeList=(
+"OUTDIR"
+"INDIR_HADDED"
+"INDIR_NOT_HADDED"
 "VARS"
 "REGIONS"
 "NUM_PRODUCTS"
 "BKG_FILES"
 )
 
+Outdir=""
+Indir_Hadded=""
+Indir_Not_Hadded=""
 VarList=()
 ProdList=()
 RegionList=()
@@ -40,7 +46,16 @@ do
     continue
   fi
 
-  if [ "$parseMode" == "VARS" ];then
+  if [ "$parseMode" == "OUTDIR" ];then
+      Outdir="$line"
+      echo "Outdir: " ${Outdir}
+  elif [ "$parseMode" == "INDIR_HADDED" ];then
+      Indir_Hadded="$line"
+      echo "Indir_Hadded: " ${Indir_Hadded}
+  elif [ "$parseMode" == "INDIR_NOT_HADDED" ];then
+      Indir_Not_Hadded="$line"
+      echo "Indir_Not_Hadded: " ${Indir_Not_Hadded}
+  elif [ "$parseMode" == "VARS" ];then
     base=`echo $line | awk '{split($1,array," "); print array[1]}'`
     VarList+=("$base")
     #echo 'VarList+='$base
@@ -60,8 +75,11 @@ done < $varFile
 
 rm -rf yNJets
 mkdir yNJets
-##xrdcp -r root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/ ./yNJets #ben: i don't think this works
-python movefiles.py T3_US_FNAL displaced_bkg_jan12_noTrigger/nJets/ local $PWD/yNJets -r -p xrootd
+##xrdcp -r root://cmseos.fnal.gov//store/user/"$Outdir"/nJets/ ./yNJets #ben: i don't think this works
+#hack to split outdir into user and path from user (so we can use Alexx's script)
+#right now set up assuming Outdir is in your eos user area.  I believe we can use "myuser" variable below as argument to movefiles otherwise
+IFS=/ read myuser mypath <<< "$Outdir"
+python movefiles.py T3_US_FNAL $mypath/nJets/ local $PWD/yNJets -r -p xrootd
 
 
 for i in "${!VarList[@]}"
@@ -77,15 +95,15 @@ do
       do
         python hadd_many.py "yNJets/${var}_${prod}_${k}/testDistr${l}.root" "yNJets/${var}_${prod}_${k}/bkg${l}/*.root"
 	#haddR -f yNJets/${var}_${prod}_${k}/testDistr${l}.root yNJets/${var}_${prod}_${k}/bkg${l}/*.root
-	##haddR -f -c ${var}_${prod}_${k}testDistr${l}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/bkg${l}/ | grep "\.root"`
-	##xrdcp ${var}_${prod}_${k}testDistr${l}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/testDistr${l}.root
+	##haddR -f -c ${var}_${prod}_${k}testDistr${l}.root `xrdfs root://cmseos.fnal.gov ls /store/user/"$Outdir"/nJets/${var}_${prod}_${k}/bkg${l}/ | grep "\.root"`
+	##xrdcp ${var}_${prod}_${k}testDistr${l}.root root://cmseos.fnal.gov//store/user/"$Outdir"/nJets/${var}_${prod}_${k}/testDistr${l}.root
 	##rm ${var}_${prod}_${k}testDistr${l}.root
 	:
       done
       python hadd_many.py "yNJets/testDistr_${var}_${prod}_${k}.root" "yNJets/${var}_${prod}_${k}/testDistr*"
       #haddR -f yNJets/testDistr_${var}_${prod}_${k}.root yNJets/${var}_${prod}_${k}/testDistr*
-      ##haddR -f -c testDistr_${var}_${prod}_${k}.root `xrdfs root://cmseos.fnal.gov ls /store/user/kreis/displaced_bkg_pt-dr/nJets/${var}_${prod}_${k}/ | grep "testDistr"`
-      ##xrdcp testDistr_${var}_${prod}_${k}.root root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_pt-dr/nJets/testDistr_${var}_${prod}_${k}.root
+      ##haddR -f -c testDistr_${var}_${prod}_${k}.root `xrdfs root://cmseos.fnal.gov ls /store/user/"$Outdir"/nJets/${var}_${prod}_${k}/ | grep "testDistr"`
+      ##xrdcp testDistr_${var}_${prod}_${k}.root root://cmseos.fnal.gov//store/user/"$Outdir"/nJets/testDistr_${var}_${prod}_${k}.root
       ##rm testDistr_${var}_${prod}_${k}.root
       :
     done

@@ -17,6 +17,9 @@ colors = [kGreen+4,kGreen+2,kGreen,kYellow,kRed+2,kRed,kRed-4,kMagenta+2,kMagent
 
 gStyle.SetOptStat(0)
 
+Outdir=""
+Indir_Hadded=""
+Indir_Not_Hadded=""
 VarList = []
 LowBoundList = []
 UpBoundList = []
@@ -27,9 +30,8 @@ regionList = []
 numProductList = []
 
 denomProduct = "BASICCALOJETS1PT20"
-fileDir = "root://cmseos.fnal.gov//store/user/lpchbb/mwalker/AnalysisTrees/" #used in makeNumDenom to derive efficiencies
-allTreesDir = "root://cmseos.fnal.gov//store/user/lpchbb/kreis/AnalysisTrees/"
-
+fileDir = "" #Hadded trees used in makeNumDenom to derive efficiencies
+allTreesDir = "" #Not hadded used in condor step
 sampleList = []
 filesBkg = []
 xsecs = []
@@ -42,7 +44,7 @@ for line in varFile.readlines():
   line = line[0:-1]
   if parseMode == "null":
     newMode = line.partition('<')[-1].rpartition('>')[0]
-    if newMode in ["VARS","REGIONS","NUM_PRODUCTS","DENOM_PRODUCT","BKG_FILES","FILE_DIR"]:
+    if newMode in ["OUTDIR","INDIR_HADDED","INDIR_NOT_HADDED","VARS","REGIONS","NUM_PRODUCTS","DENOM_PRODUCT","BKG_FILES","FILE_DIR"]:
       parseMode = newMode
       continue
     elif newMode == "":
@@ -53,7 +55,18 @@ for line in varFile.readlines():
       parseMode = "null"
       continue
   
-  if parseMode == "VARS":
+  if parseMode == "OUTDIR":
+    Outdir=line
+    print "Outdir: "+str(Outdir)
+  elif parseMode == "INDIR_HADDED":
+    Indir_Hadded=line
+    fileDir = "root://cmseos.fnal.gov//store/user/"+str(Indir_Hadded)+"/" 
+    print "Indir_Hadded: "+str(Indir_Hadded)
+  elif parseMode == "INDIR_NOT_HADDED":
+    Indir_Not_Hadded=line
+    allTreesDir = "root://cmseos.fnal.gov//store/user/"+str(Indir_Not_Hadded)+"/"
+    print "Indir_Not_Hadded: "+str(Indir_Not_Hadded)
+  elif parseMode == "VARS":
     splitLine = line.split(" ")
     VarList.append(splitLine[0])
     LowBoundList.append(float(splitLine[1]))
@@ -82,14 +95,16 @@ for line in varFile.readlines():
   elif parseMode == "FILE_DIR":
     fileDir = line
 
+
+
 #Set deltaRmode to true if we want to parameterize 2D efficiencies in terms of deltaR
 #NOTE: the code is sometimes  modified to parameterize with nGoodVertices instead
-deltaRmode = True
+deltaRmode = False
 
 #Set singleEffMode to true if we want the total effiency not parameterized.
 #If this option is true, the first variable in the varFile will not have plots associated to it. That variable is used as a proxy to generate the plot
 #if deltaRmode == True && singleEffMode == true then we get the efficiency as a function of only deltaR instead of a 2D parameterization with the first variable 
-singleEffMode = True
+singleEffMode = False
 if singleEffMode:
   LowBoundList[0] = -1000000000
   UpBoundList[0] = 1000000000
@@ -198,7 +213,7 @@ def makeEffiPlot(i,n,r):
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
@@ -290,7 +305,7 @@ def effiWriteToPDF():
         numProduct = numProductList[n]
         region = regionList[r]
 
-        ff = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
+        ff = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r))
 
         if not deltaRmode:
           effiPlot = TH1F(ff.Get("effi_%s_%s_%i"%(var,numProduct,r)))
@@ -758,7 +773,7 @@ def parseTree(numProduct,regionIndex,i,j,file):
   upBoundEff = UpBoundList[i]
   inFile = allTreesDir + sample + "/" + file
   
-  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
+  fEffi = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/effiFiles/effi_%s_%s_%s.root"%(var,numProduct,regionIndex))
   if not deltaRmode:
     hEffi = fEffi.Get("effi_%s_%s_%i"%(var,numProduct,regionIndex))
   else:
@@ -973,7 +988,7 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
 
 if __name__ == '__main__': main()

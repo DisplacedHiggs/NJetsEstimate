@@ -42,12 +42,18 @@ echo "" >> $condorFile
 varFile=nJetsVars.list
 
 parseModeList=(
+"OUTDIR"
+"INDIR_HADDED"
+"INDIR_NOT_HADDED"
 "VARS"
 "REGIONS"
 "NUM_PRODUCTS"
 "BKG_FILES"
 )
 
+Outdir=""
+Indir_Hadded=""
+Indir_Not_Hadded=""
 VarList=()
 ProdList=()
 RegionList=()
@@ -80,7 +86,16 @@ do
     continue
   fi
 
-  if [ "$parseMode" == "VARS" ];then
+  if [ "$parseMode" == "OUTDIR" ];then
+      Outdir="$line"
+      echo "Outdir: " ${Outdir}
+  elif [ "$parseMode" == "INDIR_HADDED" ];then
+      Indir_Hadded="$line"
+      echo "Indir_Hadded: " ${Indir_Hadded}
+  elif [ "$parseMode" == "INDIR_NOT_HADDED" ];then
+      Indir_Not_Hadded="$line"
+      echo "Indir_Not_Hadded: " ${Indir_Not_Hadded}
+  elif [ "$parseMode" == "VARS" ];then
     base=`echo $line | awk '{split($1,array," "); print array[1]}'`  
     VarList+=("$base")
     #echo 'VarList+='$base
@@ -100,12 +115,12 @@ done < $varFile
 
 
 #paths on eos to store nJets data
-eos root://cmseos.fnal.gov rm -r /store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/
-eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/
-eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/effiFiles
+eos root://cmseos.fnal.gov rm -r /store/user/"$Outdir"/nJets/
+eos root://cmseos.fnal.gov mkdir -p /store/user/"$Outdir"/nJets/
+eos root://cmseos.fnal.gov mkdir -p /store/user/"$Outdir"/nJets/effiFiles
 
 #path where analysis trees are stored
-allTreesDir=/store/user/lpchbb/kreis/AnalysisTrees/
+allTreesDir=/store/user/${Indir_Not_Hadded}/
 
 
 #set up nJets directory and create efficiencies
@@ -118,7 +133,7 @@ do
     for k in "${!RegionList[@]}"
     do
       region=${RegionList[$k]}
-      eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/${var}_${prod}_${k}
+      eos root://cmseos.fnal.gov mkdir -p /store/user/"$Outdir"/nJets/${var}_${prod}_${k}
       python -c "from nJetsEstimate_LPC import makeEffiPlot; makeEffiPlot(${i},${j},${k})"
       for l in $(seq 0 $nBkgFiles)
       do
@@ -127,7 +142,7 @@ do
 	echo $product
 	echo $region
         echo $bkgFile
-        eos root://cmseos.fnal.gov mkdir -p /store/user/kreis/displaced_bkg_jan12_noTrigger/nJets/${var}_${prod}_${k}/bkg${l}
+        eos root://cmseos.fnal.gov mkdir -p /store/user/"$Outdir"/nJets/${var}_${prod}_${k}/bkg${l}
       done
     done
   done
