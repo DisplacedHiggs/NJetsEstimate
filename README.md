@@ -1,18 +1,23 @@
 # NJetsEstimate
-code for background estimate
-
-NOTE: The code for the N Jets Estimation is designed to run on the LPC servers.
-
+code for background estimate designed to run at the LPC
 
 # Running Instructions:
+
+### Set up code:
 ```
 git clone git@github.com:DisplacedHiggs/NJetsEstimate.git
 cd NJetsEstimate
 mkdir logs scripts
+```
+
+###Run the code 
+```
 bash createNJets.sh
 condor_submit submitNJets.condor
 bash prepareNJetsPlots.sh
 ```
+Note, each of these steps can take hours.
+
 
 # More Details
 The general workflow for how this works is as follows.
