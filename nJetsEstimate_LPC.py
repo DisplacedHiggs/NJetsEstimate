@@ -213,10 +213,16 @@ def makeEffiPlot(i,n,r):
   effi.SetName("%seffi_%s_%s_%i"%("" if not deltaRmode else "DELTAR_", var,numProduct,r))
   effi.SetDirectory(0)
   
-  effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE")
+  cwd = os.getcwd()
+  print "cwd %s"%(cwd)
+  #effiFile = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/effiFiles/effi_%s_%s_%i.root"%(var,numProduct,r),"RECREATE") #DIRECT
+  effiFile = TFile.Open("%s/effi_%s_%s_%i.root"%(cwd,var,numProduct,r),"RECREATE") 
   effi.Write()
   numDistrTotal.Write()
   denomDistrTotal.Write()
+  effiFile.Close()
+  os.popen("xrdcp --silent %s/effi_%s_%s_%i.root root://cmseos.fnal.gov//store/user/%s/nJets/effiFiles/effi_%s_%s_%i.root"%(cwd,var,numProduct,r,Outdir,var,numProduct,r))
+  os.popen("rm %s/effi_%s_%s_%i.root"%(cwd,var,numProduct,r))
 
 # not used in main(), helper for makeEffiPlot()
 def makeNumDenom(i,j,region,numProduct,queue):
@@ -988,7 +994,13 @@ def main():
         nJetsBkg.Scale(xsecs[j])
         hEstBkg.Scale(xsecs[j])
         
-        testFile = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")
+        #testFile = TFile.Open("root://cmseos.fnal.gov//store/user/"+str(Outdir)+"/nJets/%s_%s_%i/bkg%i/%s"%(var,numProduct,regionIndex,j,file),"RECREATE")#DIRECT
+        cwd = os.getcwd()
+        print "cwd2 %s"%(cwd)
+        testFile = TFile.Open("%s/%s_%s_%i_bkg%i_%s"%(cwd,var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
+        testFile.Close
+        os.popen("xrdcp --silent %s/%s_%s_%i_bkg%i_%s root://cmseos.fnal.gov//store/user/%s/nJets/%s_%s_%i/bkg%i/%s"%(cwd,var,numProduct,regionIndex,j,file,Outdir,var,numProduct,regionIndex,j,file))
+        os.popen("rm %s/%s_%s_%i_bkg%i_%s"%(cwd,var,numProduct,regionIndex,j,file))
 
 if __name__ == '__main__': main()
