@@ -11,7 +11,7 @@ scram b ProjectRename
 eval `scramv1 runtime -sh`
 cd -
 
-python nJetsEstimate_LPC.py $1 $2
+python nJetsEstimate_LPC.py $1 $2 2>&1
 
 parseMode="null"
 while read line
