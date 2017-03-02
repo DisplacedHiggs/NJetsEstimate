@@ -221,6 +221,7 @@ def makeEffiPlot(i,n,r):
   numDistrTotal.Write()
   denomDistrTotal.Write()
   effiFile.Close()
+  print "makeEffiPlot: copy effi file to eos"
   os.popen("xrdcp --silent %s/effi_%s_%s_%i.root root://cmseos.fnal.gov//store/user/%s/nJets/effiFiles/effi_%s_%s_%i.root"%(cwd,var,numProduct,r,Outdir,var,numProduct,r))
   os.popen("rm %s/effi_%s_%s_%i.root"%(cwd,var,numProduct,r))
 
@@ -1000,6 +1001,9 @@ def main():
         testFile = TFile.Open("%s/%s_%s_%i_bkg%i_%s"%(cwd,var,numProduct,regionIndex,j,file),"RECREATE")
         for h in retHistos: h.Write()
         testFile.Close
+        print "main: ls estimate file that should not exist yet" 
+        os.popen("eos root://cmseos.fnal.gov ls /store/user/%s/nJets/%s_%s_%i/bkg%i/%s"%(Outdir,var,numProduct,regionIndex,j,file))
+        print "main: copy estimate file"
         os.popen("xrdcp --silent %s/%s_%s_%i_bkg%i_%s root://cmseos.fnal.gov//store/user/%s/nJets/%s_%s_%i/bkg%i/%s"%(cwd,var,numProduct,regionIndex,j,file,Outdir,var,numProduct,regionIndex,j,file))
         os.popen("rm %s/%s_%s_%i_bkg%i_%s"%(cwd,var,numProduct,regionIndex,j,file))
 
