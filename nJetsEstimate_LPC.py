@@ -1002,7 +1002,7 @@ def main():
         for h in retHistos: h.Write()
         testFile.Close
         print "main: ls estimate file that should not exist yet" 
-        os.popen("eos root://cmseos.fnal.gov ls /store/user/%s/nJets/%s_%s_%i/bkg%i/%s"%(Outdir,var,numProduct,regionIndex,j,file))
+        os.popen("xrdfs root://cmseos.fnal.gov ls /store/user/%s/nJets/%s_%s_%i/bkg%i/%s"%(Outdir,var,numProduct,regionIndex,j,file))
         print "main: copy estimate file"
         os.popen("xrdcp --silent %s/%s_%s_%i_bkg%i_%s root://cmseos.fnal.gov//store/user/%s/nJets/%s_%s_%i/bkg%i/%s"%(cwd,var,numProduct,regionIndex,j,file,Outdir,var,numProduct,regionIndex,j,file))
         os.popen("rm %s/%s_%s_%i_bkg%i_%s"%(cwd,var,numProduct,regionIndex,j,file))
